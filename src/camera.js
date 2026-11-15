@@ -3,6 +3,9 @@
 //   { lane, start(), stop(), update(elapsed), consumeJump(), isDucking() }
 // Extra methods used by main.js: init(), calibrate(), cancelCalibration(), release().
 
+// Same Comic Sans stack as --comic in index.html (canvas can't read CSS variables).
+const COMIC = '"Comic Sans MS", "Comic Sans", "Comic Neue", "Chalkboard SE", "Chalkboard", cursive';
+
 const NOSE = 0, L_SHOULDER = 11, R_SHOULDER = 12, L_HIP = 23, R_HIP = 24;
 
 export class CameraError extends Error {}
@@ -345,7 +348,7 @@ export class CameraController {
     if (this.duckRaw) { label = 'DUCK'; color = '#ff9b2f'; }
     else if (this.jumpRaw || performance.now() < this.jumpLabelUntil) { label = 'JUMP'; color = '#3fa9ff'; }
     if (label) {
-      ctx.font = '900 28px system-ui, sans-serif';
+      ctx.font = `700 28px ${COMIC}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.lineWidth = 4;
@@ -365,7 +368,7 @@ export class CameraController {
     ctx.fillStyle = bad ? 'rgba(170,20,20,0.85)' : 'rgba(0,0,0,0.65)';
     ctx.fillRect(0, h - 24, w, 24);
     ctx.fillStyle = '#fff';
-    ctx.font = '600 13px system-ui, sans-serif';
+    ctx.font = `700 13px ${COMIC}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(status, w / 2, h - 12);

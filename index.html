@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Jensen Run</title>
+  <title>Jensen Rush</title>
   <meta name="description" content="A 3-lane runner you can play with the keyboard or with your whole body through the webcam.">
   <meta name="theme-color" content="#040a06">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2376b900'/><text x='50' y='68' font-size='52' font-family='system-ui' font-weight='900' text-anchor='middle' fill='%23050a05'>JR</text></svg>">
@@ -125,7 +125,9 @@
     .error { color: var(--red); font-weight: 600; }
 
     #calib .panel { max-width: 460px; }
-    #calib-count { font-size: 64px; font-weight: 900; color: var(--green); min-height: 1.1em; line-height: 1.1; }
+    #calib, #calib button { font-family: var(--comic); }
+    #calib h2 { font-weight: 700; }
+    #calib-count { font-size: 64px; font-weight: 700; color: var(--green); min-height: 1.1em; line-height: 1.1; }
 
     #countdown { pointer-events: none; }
     #countdown-num {
@@ -210,7 +212,7 @@
   </style>
 </head>
 <body>
-  <canvas id="game" aria-label="Jensen Run game"></canvas>
+  <canvas id="game" aria-label="Jensen Rush game"></canvas>
 
   <!-- HUD -->
   <div id="hud" class="hidden">
@@ -237,7 +239,7 @@
       <div class="paper-head">
         <img class="paper-jensen" src="assets/menu-jensen.png" alt="Jensen Huang">
         <div class="paper-titles">
-          <h1 class="paper-title">jensen huang run</h1>
+          <h1 class="paper-title">jensen huang rush</h1>
           <fieldset class="paper-mode" id="mode-picker">
             <legend>mode</legend>
             <label><input type="radio" name="mode" value="keyboard"> keyboard</label>

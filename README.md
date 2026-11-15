@@ -1,4 +1,4 @@
-# Jensen Run
+# Jensen Rush
 
 A 3-lane runner in the browser. Play it with the **keyboard**, or with **your whole body** through the webcam (MediaPipe pose tracking, all on-device).
 
