@@ -51,7 +51,7 @@ export const CONFIG = {
   background: {
     wallLanes: [-1.1, 3.1],  // lateral position of the left / right wall, in lanes (road is -0.5..2.5)
     wallHeight: 2.3,         // ceiling height in lane widths
-    period: { ceiling: 0.42, walls: 0.22 }, // length of one tile along the run, in z units (1 = horizon)
+    period: { ceiling: 0.42, walls: 0.22, floor: 0.37 }, // length of one tile along the run, in z units (1 = horizon)
     fadeStart: 0.8,          // z where the planes start fading into the fog
     fadeEnd: 2.6,            // z where they are fully faded (nothing drawn past this)
     fog: [150, 160, 155],    // colour at the vanishing point (RGB)
@@ -59,6 +59,8 @@ export const CONFIG = {
     ceiling: { src: 'assets/hq-ceiling.jpg', vp: [172, 335], near: 335, far: 120, a: -0.513, b: 0.487 },
     left:    { src: 'assets/hq-left.jpg',    vp: [295, 320], near: 295, far: 100, a: -1.085, b: 0.407 },
     right:   { src: 'assets/hq-right.jpg',   vp: [25, 305],  near: 260, far: 85,  a: -0.96,  b: 0.66 },
+    // Carpet, wall to wall under the lanes (vp is above the photo: the camera looks down at it)
+    floor:   { src: 'assets/hq-floor.jpg',   vp: [499, -73], near: 559, far: 243, a: -0.74,  b: 0.6 },
   },
 
   // --- Camera / pose tracking ---

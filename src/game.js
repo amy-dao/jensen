@@ -42,7 +42,8 @@ function optionalImage(src) {
 // ---------- HQ interior background ----------
 
 // Un-warps the used slice of a perspective photo into a flat texture.
-// kind: 'ceiling' (rows = depth, near at the top) or 'left' / 'right' (columns = depth, near first).
+// kind: 'ceiling' / 'floor' (rows = depth, near first; the photo's near edge is its top / bottom)
+// or 'left' / 'right' (columns = depth, near first).
 // Depth is linear in t: D = lerp(1/near, 1/far, t), and the photo distance from the vp is 1/D.
 function rectify(img, spec, kind) {
   const sw = img.naturalWidth, sh = img.naturalHeight;
@@ -52,8 +53,9 @@ function rectify(img, spec, kind) {
   sctx.drawImage(img, 0, 0);
   const src = sctx.getImageData(0, 0, sw, sh).data;
 
-  const isCeiling = kind === 'ceiling';
-  const tw = isCeiling ? 256 : 512;
+  const isFloor = kind === 'floor';
+  const isCeiling = kind === 'ceiling' || isFloor;
+  const tw = kind === 'ceiling' ? 256 : 512;
   const th = isCeiling ? 512 : 256;
   const out = document.createElement('canvas');
   out.width = tw; out.height = th;
@@ -69,7 +71,7 @@ function rectify(img, spec, kind) {
       let sx, sy;
       if (isCeiling) {
         const dist = 1 / lerp(D0, D1, v);              // rows = depth
-        sy = vy - dist;
+        sy = isFloor ? vy + dist : vy - dist;
         sx = vx + dist * lerp(spec.a, spec.b, u);      // columns = left -> right
       } else {
         const dist = 1 / lerp(D0, D1, u);              // columns = depth
@@ -93,11 +95,11 @@ function rectify(img, spec, kind) {
   return out;
 }
 
-// Loads and rectifies the three photos. Fields stay null until (and unless) they are ready.
+// Loads and rectifies the photos. Fields stay null until (and unless) they are ready.
 function loadBackground(bg) {
-  const holder = { ceiling: null, left: null, right: null };
+  const holder = { ceiling: null, left: null, right: null, floor: null };
   if (!bg) return holder;
-  for (const kind of ['ceiling', 'left', 'right']) {
+  for (const kind of ['ceiling', 'left', 'right', 'floor']) {
     const spec = bg[kind];
     if (!spec || !spec.src) continue;
     const im = new Image();
@@ -485,16 +487,26 @@ export class Game {
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, W, H);
 
-    // Floor between the walls (the road is drawn on top later)
-    const ground = ctx.createLinearGradient(0, horizon, 0, H);
-    ground.addColorStop(0, `rgb(${fr},${fg},${fb})`);
-    ground.addColorStop(0.25, '#3a403d');
-    ground.addColorStop(1, '#1c201e');
-    ctx.fillStyle = ground;
-    ctx.fillRect(0, horizon, W, H - horizon);
-
     ctx.imageSmoothingEnabled = true;
     const STEP = 2; // slice thickness in screen px
+
+    // Carpet floor, wall to wall: y_floor(s) = horizon + groundH * s, below the horizon.
+    const floor = this.bg.floor;
+    if (floor) {
+      const periodF = bgc.period.floor;
+      const yStartF = Math.floor((horizon + groundH * sEnd) / STEP) * STEP;
+      for (let y = yStartF; y < H; y += STEP) {
+        const s = (y + STEP / 2 - horizon) / groundH;
+        if (s <= 0) continue;
+        const z = zOf(s);
+        ctx.globalAlpha = fadeAlpha(z);
+        const row = mirrorFrac((z + this.scroll) / periodF) * (floor.height - 1);
+        const xl = cx + (wl - 1) * laneW * s;
+        const xr = cx + (wr - 1) * laneW * s;
+        ctx.drawImage(floor, 0, row, floor.width, 1, xl, y, xr - xl, STEP + 0.5);
+      }
+      ctx.globalAlpha = 1;
+    }
 
     // Ceiling: y_ceil(s) = horizon + (groundH - wallH) * s, above the horizon.
     const ceil = this.bg.ceiling;
@@ -562,12 +574,16 @@ export class Game {
     const zb = this.bottomZ(L) - 0.01;
     const zFar = 1000; // ~ vanishing point
 
-    const road = ctx.createLinearGradient(0, L.horizon, 0, L.H);
-    road.addColorStop(0, '#0d1311');
-    road.addColorStop(1, '#1b2321');
-    ctx.fillStyle = road;
-    this.stripPath(ctx, L, -0.5, 2.5, zb, zFar);
-    ctx.fill();
+    // Dark road surface (the HQ interior draws carpet instead)
+    const carpet = interior && this.bg.floor;
+    if (!carpet) {
+      const road = ctx.createLinearGradient(0, L.horizon, 0, L.H);
+      road.addColorStop(0, '#0d1311');
+      road.addColorStop(1, '#1b2321');
+      ctx.fillStyle = road;
+      this.stripPath(ctx, L, -0.5, 2.5, zb, zFar);
+      ctx.fill();
+    }
 
     // Current lane highlight
     const hl = ctx.createLinearGradient(0, L.horizon, 0, L.H);
@@ -607,7 +623,8 @@ export class Game {
       }
     }
 
-    // Horizon fade so the road melts into the distance
+    // Horizon fade so the road melts into the distance (the carpet fades on its own)
+    if (carpet) return;
     const fade = ctx.createLinearGradient(0, L.horizon, 0, L.horizon + (L.baseY - L.horizon) * 0.12);
     const fc = interior
       ? this.cfg.background.fog.map((c) => Math.round(c * (1 - this.cfg.background.dim))).join(',')
