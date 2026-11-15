@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Jensen Run</title>
+  <meta name="description" content="A 3-lane runner you can play with the keyboard or with your whole body through the webcam.">
+  <meta name="theme-color" content="#040a06">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2376b900'/><text x='50' y='68' font-size='52' font-family='system-ui' font-weight='900' text-anchor='middle' fill='%23050a05'>JR</text></svg>">
+  <style>
+    :root {
+      --green: #76b900;
+      --green-hi: #9be21a;
+      --bg: #040a06;
+      --panel: rgba(6, 16, 10, 0.86);
+      --text: #e8f2e8;
+      --muted: #9fb3a3;
+      --red: #ff4a4a;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%; overflow: hidden;
+      background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-user-select: none; user-select: none;
+    }
+    #game { position: fixed; inset: 0; display: block; }
+    .hidden { display: none !important; }
+
+    /* ---------- HUD ---------- */
+    #hud {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; gap: 16px;
+      padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+      font-weight: 800; pointer-events: none;
+      background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0));
+    }
+    .chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(118,185,0,0.5);
+      border-radius: 999px; padding: 6px 14px; font-size: 18px; white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+    .gpu-icon {
+      background: var(--green); color: #071107; font-size: 11px; font-weight: 900;
+      border-radius: 4px; padding: 2px 5px;
+    }
+    #progress {
+      flex: 1; height: 12px; border-radius: 999px; overflow: hidden;
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(118,185,0,0.4);
+    }
+    #progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #4c7a00, var(--green), var(--green-hi)); }
+
+    /* ---------- key hint ---------- */
+    #keyhint {
+      position: fixed; left: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px; padding: 8px 12px; font-size: 13px; line-height: 1.6; color: var(--muted);
+      pointer-events: none;
+    }
+    kbd {
+      display: inline-block; min-width: 1.6em; text-align: center;
+      border: 1px solid rgba(255,255,255,0.35); border-bottom-width: 2px; border-radius: 4px;
+      padding: 0 4px; font: 600 12px system-ui, sans-serif; color: var(--text);
+    }
+
+    /* ---------- webcam preview ---------- */
+    #cam {
+      position: fixed; right: 16px; bottom: max(16px, env(safe-area-inset-bottom));
+      width: 320px; max-width: calc(50vw - 24px); aspect-ratio: 4 / 3;
+      border: 2px solid var(--green); border-radius: 12px; overflow: hidden;
+      background: #000; z-index: 20; box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    }
+    #cam video {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: fill; transform: scaleX(-1);
+    }
+    #cam canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    /* ---------- screens ---------- */
+    .screen {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .dim { background: radial-gradient(ellipse at center, rgba(2,8,4,0.55), rgba(2,8,4,0.85)); }
+    .panel {
+      background: var(--panel); border: 1px solid rgba(118,185,0,0.35);
+      border-radius: 18px; padding: 28px 28px 24px; max-width: 520px; width: 100%;
+      text-align: center; box-shadow: 0 10px 50px rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    }
+    h1.title {
+      margin: 0 0 6px; font-size: clamp(48px, 11vw, 88px); line-height: 0.95;
+      font-weight: 900; letter-spacing: -0.03em;
+      color: #fff; text-shadow: 0 0 30px rgba(118,185,0,0.55);
+    }
+    h1.title span { color: var(--green); }
+    .tagline { margin: 0 0 22px; color: var(--muted); }
+    h2 { margin: 0 0 8px; font-size: 30px; font-weight: 900; }
+    p { margin: 8px 0; line-height: 1.45; }
+    .buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+    button {
+      font: 800 17px system-ui, sans-serif; cursor: pointer;
+      border-radius: 12px; padding: 13px 20px; border: 2px solid var(--green);
+      background: transparent; color: var(--text);
+      transition: transform 0.08s, background 0.15s;
+    }
+    button:hover { background: rgba(118,185,0,0.15); }
+    button:active { transform: scale(0.97); }
+    button.primary { background: var(--green); color: #071107; }
+    button.primary:hover { background: var(--green-hi); }
+    .legend {
+      margin-top: 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      font-size: 13px; color: var(--muted);
+    }
+    .legend div { background: rgba(255,255,255,0.05); border-radius: 10px; padding: 10px 6px; }
+    .legend .em { display: block; font-size: 28px; margin-bottom: 4px; }
+    .legend b { color: var(--text); }
+    .legend .gpu-row { grid-column: 1 / -1; }
+    .small { font-size: 13px; color: var(--muted); }
+    .error { color: var(--red); font-weight: 600; }
+
+    #calib .panel { max-width: 460px; }
+    #calib-count { font-size: 64px; font-weight: 900; color: var(--green); min-height: 1.1em; line-height: 1.1; }
+
+    #countdown { pointer-events: none; }
+    #countdown-num {
+      font-size: clamp(120px, 30vw, 240px); font-weight: 900; color: #fff;
+      text-shadow: 0 0 40px rgba(118,185,0,0.9), 0 6px 0 rgba(0,0,0,0.5);
+      animation: pop 1s ease-out infinite;
+    }
+    @keyframes pop { 0% { transform: scale(1.5); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.9); opacity: 0.85; } }
+
+    .stats { display: flex; justify-content: center; gap: 12px; margin: 16px 0 4px; }
+    .stat { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 18px; min-width: 120px; }
+    .stat .v { font-size: 30px; font-weight: 900; color: var(--green); font-variant-numeric: tabular-nums; }
+    .stat .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    #end.failed h2 { color: var(--red); }
+
+    @media (max-width: 520px) {
+      .panel { padding: 22px 16px 18px; }
+      #hud { gap: 8px; }
+      .chip { font-size: 15px; padding: 5px 10px; }
+      #keyhint { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" aria-label="Jensen Run game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="chip"><span class="gpu-icon">GPU</span><span id="hud-gpu">0</span></div>
+    <div id="progress" aria-label="Progress to the finish"><div id="progress-fill"></div></div>
+    <div class="chip">⏱ <span id="hud-time">90s</span></div>
+  </div>
+
+  <div id="keyhint" class="hidden">
+    <kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> change lane<br>
+    <kbd>↑</kbd> / <kbd>W</kbd> / <kbd>Space</kbd> jump<br>
+    <kbd>↓</kbd> / <kbd>S</kbd> duck
+  </div>
+
+  <!-- Webcam preview -->
+  <div id="cam" class="hidden">
+    <video id="cam-video" playsinline muted></video>
+    <canvas id="cam-overlay"></canvas>
+  </div>
+
+  <!-- Menu -->
+  <div id="menu" class="screen dim">
+    <div class="panel">
+      <h1 class="title">Jensen <span>Run</span></h1>
+      <p class="tagline">Dodge the obstacles, grab the GPUs, reach the finish.</p>
+      <div class="buttons">
+        <button id="btn-keyboard" class="primary">⌨️ Keyboard mode</button>
+        <button id="btn-camera">📷 Camera mode</button>
+      </div>
+      <div class="legend">
+        <div><span class="em">🚧</span><b>Jump</b> over it</div>
+        <div><span class="em">🛸</span><b>Duck</b> under it</div>
+        <div><span class="em">🧱</span><b>Switch</b> lanes</div>
+        <div class="gpu-row"><span class="gpu-icon">GPU</span>&nbsp; Run through GPUs to collect them</div>
+      </div>
+      <p class="small" style="margin-top:14px">Camera mode: move left/right to change lanes, jump, and crouch — with your whole body.</p>
+    </div>
+  </div>
+
+  <!-- Calibration -->
+  <div id="calib" class="screen dim hidden">
+    <div class="panel">
+      <h2>Calibration</h2>
+      <p id="calib-msg">Stand in the <b>MIDDLE</b> lane, ~2&nbsp;m back, stay still.</p>
+      <div id="calib-count"></div>
+      <p id="calib-status" class="small"></p>
+      <div class="buttons">
+        <button id="btn-calib-back">Back to menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Countdown -->
+  <div id="countdown" class="screen hidden">
+    <div id="countdown-num">3</div>
+  </div>
+
+  <!-- End -->
+  <div id="end" class="screen dim hidden">
+    <div class="panel">
+      <h2 id="end-title">Level complete! 🏁</h2>
+      <div class="stats">
+        <div class="stat"><div class="v" id="end-time">0.0s</div><div class="k">Time survived</div></div>
+        <div class="stat"><div class="v" id="end-gpus">0</div><div class="k">GPUs collected</div></div>
+      </div>
+      <div class="buttons">
+        <button id="btn-retry" class="primary">↻ Retry</button>
+        <button id="btn-recal">🎯 Recalibrate</button>
+        <button id="btn-menu">Menu</button>
+      </div>
+      <p class="small">Press <kbd>Enter</kbd> or <kbd>Space</kbd> to retry</p>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
