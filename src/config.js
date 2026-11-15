@@ -12,6 +12,10 @@ export const CONFIG = {
   gpuRowChance: 0.55,        // chance a row gets a trail of 3 GPUs in a free lane
   gpuTrailSpacing: 0.18,     // seconds between GPUs in a trail
 
+  // Which moves exist. With both off, every obstacle blocks its lane and the only way
+  // to avoid it is to switch lanes (jump/duck controls and hints are hidden).
+  moves: { jump: false, duck: false },
+
   // --- Player ---
   jumpSeconds: 0.75,         // length of a jump (arc = sin(pi * t))
   jumpSafeHeight: 0.35,      // jump height (0..1) needed to clear a low obstacle
@@ -28,10 +32,12 @@ export const CONFIG = {
   runFrameBody: 0.81,        // how much of the frame height the body (head to feet) takes up
   runFrameScale: 1.05,       // body height relative to the stick-figure player
   headImage: null,           // back of the head for the stick-figure fallback, e.g. 'assets/jensen-head.png'
+  // Obstacle pictures: `image` is one path, or a list stacked top-to-bottom. null -> emoji.
   obstacles: {
-    low:  { emoji: '🚧', image: null }, // jump over it
-    high: { emoji: '🛸', image: null }, // duck under it
-    wall: { emoji: '🧱', image: null }, // switch lanes
+    low:  { emoji: '🚧', image: 'assets/distract-a.webp' }, // jump over it
+    high: { emoji: '🛸', image: 'assets/distract-b.webp' }, // duck under it
+    // switch lanes. stack: true draws all images on top of each other; false picks one per obstacle
+    wall: { emoji: '🧱', image: ['assets/distract-a.webp', 'assets/distract-b.webp'], stack: false },
   },
   gpu: { image: 'assets/gpu.webp', size: 0.46 }, // image: null -> green "GPU" card; size in lane widths
 

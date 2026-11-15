@@ -53,9 +53,9 @@ export class KeyboardController {
       if (!e.repeat) this.lane = Math.max(0, this.lane - 1);
     } else if (RIGHT.has(code)) {
       if (!e.repeat) this.lane = Math.min(2, this.lane + 1);
-    } else if (JUMP.has(code)) {
+    } else if (JUMP.has(code) && this.config.moves.jump) {
       if (!e.repeat) this.jumpQueued = true;
-    } else if (DUCK.has(code)) {
+    } else if (DUCK.has(code) && this.config.moves.duck) {
       this.duckTimer = this.config.keyboardDuckSeconds;
     } else {
       return;

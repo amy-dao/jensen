@@ -265,13 +265,14 @@ export class CameraController {
     const b = this.baseline;
     if (!b || this.calib) return;
     const shoulderY = (L.y + R.y) / 2;
-    const jumpNow = b.shoulderY - shoulderY > p.jumpRise * b.width;
+    const moves = this.cfg.moves;
+    const jumpNow = moves.jump && b.shoulderY - shoulderY > p.jumpRise * b.width;
     if (jumpNow && !this.jumpRaw) {
       if (this.active) this.jumpQueued = true;
       this.jumpLabelUntil = now + 500;
     }
     this.jumpRaw = jumpNow;
-    this.duckRaw = lm[NOSE].y - b.noseY > p.duckDrop * b.width;
+    this.duckRaw = moves.duck && lm[NOSE].y - b.noseY > p.duckDrop * b.width;
   }
 
   // ---------- preview overlay ----------
@@ -304,12 +305,16 @@ export class CameraController {
     if (b) {
       ctx.setLineDash([6, 5]);
       ctx.lineWidth = 2;
-      ctx.strokeStyle = '#3fa9ff';
-      const jy = (b.shoulderY - this.pcfg.jumpRise * b.width) * h;
-      ctx.beginPath(); ctx.moveTo(0, jy); ctx.lineTo(w, jy); ctx.stroke();
-      ctx.strokeStyle = '#ff9b2f';
-      const dy = (b.noseY + this.pcfg.duckDrop * b.width) * h;
-      ctx.beginPath(); ctx.moveTo(0, dy); ctx.lineTo(w, dy); ctx.stroke();
+      if (this.cfg.moves.jump) {
+        ctx.strokeStyle = '#3fa9ff';
+        const jy = (b.shoulderY - this.pcfg.jumpRise * b.width) * h;
+        ctx.beginPath(); ctx.moveTo(0, jy); ctx.lineTo(w, jy); ctx.stroke();
+      }
+      if (this.cfg.moves.duck) {
+        ctx.strokeStyle = '#ff9b2f';
+        const dy = (b.noseY + this.pcfg.duckDrop * b.width) * h;
+        ctx.beginPath(); ctx.moveTo(0, dy); ctx.lineTo(w, dy); ctx.stroke();
+      }
       ctx.setLineDash([]);
     }
 

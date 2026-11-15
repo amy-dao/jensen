@@ -20,6 +20,15 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 // Loads an optional image. `.img` stays null until (and unless) it loads.
+// Draws `img` as large as fits in a maxW x maxH box (keeping its aspect),
+// centred on cx with its bottom edge on `bottom`. Returns the drawn height.
+function drawFit(ctx, img, cx, bottom, maxW, maxH) {
+  const k = Math.min(maxW / img.width, maxH / img.height);
+  const w = img.width * k, h = img.height * k;
+  ctx.drawImage(img, cx - w / 2, bottom - h, w, h);
+  return h;
+}
+
 function optionalImage(src) {
   const holder = { img: null };
   if (src) {
@@ -131,7 +140,9 @@ export function buildMap(cfg) {
 
     for (const lane of blocked) {
       const r = rng();
-      const type = r < 0.36 ? 'low' : r < 0.68 ? 'high' : 'wall';
+      let type = r < 0.36 ? 'low' : r < 0.68 ? 'high' : 'wall';
+      // disabled moves turn into lane blockers (same RNG draws, so the layout stays the same)
+      if ((type === 'low' && !cfg.moves.jump) || (type === 'high' && !cfg.moves.duck)) type = 'wall';
       objects.push({ id: id++, kind: 'obstacle', type, lane, arrive });
     }
 
@@ -160,9 +171,10 @@ export class Game {
 
     this.images = {
       head: optionalImage(config.headImage),
-      low: optionalImage(config.obstacles.low.image),
-      high: optionalImage(config.obstacles.high.image),
-      wall: optionalImage(config.obstacles.wall.image),
+      // obstacle `image` may be one path or a list (a list is stacked top-to-bottom)
+      low: [].concat(config.obstacles.low.image || []).map(optionalImage),
+      high: [].concat(config.obstacles.high.image || []).map(optionalImage),
+      wall: [].concat(config.obstacles.wall.image || []).map(optionalImage),
       gpu: optionalImage(config.gpu.image),
       run: (config.runFrames || []).map(optionalImage),
     };
@@ -295,12 +307,12 @@ export class Game {
     this.scroll = this.time / cfg.travelSeconds;
     this.easeLane(dt);
 
-    if (c.consumeJump() && this.jumpT < 0) this.jumpT = 0;
+    if (c.consumeJump() && cfg.moves.jump && this.jumpT < 0) this.jumpT = 0;
     if (this.jumpT >= 0) {
       this.jumpT += dt;
       if (this.jumpT >= cfg.jumpSeconds) this.jumpT = -1;
     }
-    const ducking = c.isDucking();
+    const ducking = cfg.moves.duck && c.isDucking();
     this.duckAmt += ((ducking ? 1 : 0) - this.duckAmt) * Math.min(1, dt * 18);
     const jumpH = this.jumpHeight();
 
@@ -700,12 +712,13 @@ export class Game {
     }
 
     const def = this.cfg.obstacles[o.type];
-    const img = this.images[o.type].img;
+    const holders = this.images[o.type];
+    const imgs = holders.length && holders.every((h) => h.img) ? holders.map((h) => h.img) : null;
 
     if (o.type === 'low') {
       const size = L.laneW * 0.6 * s;
       this.drawShadow(ctx, p.x, p.y, size * 0.55);
-      if (img) ctx.drawImage(img, p.x - size / 2, p.y - size, size, size);
+      if (imgs) drawFit(ctx, imgs[0], p.x, p.y, size, size);
       else this.drawEmoji(ctx, def.emoji, p.x, p.y - size * 0.48, size * 0.95);
     } else if (o.type === 'high') {
       const size = L.laneW * 0.55 * s;
@@ -723,14 +736,21 @@ export class Game {
       ctx.lineTo(p.x - size * 0.45, p.y);
       ctx.closePath();
       ctx.fill();
-      if (img) ctx.drawImage(img, p.x - size / 2, cy - size / 2, size, size);
+      if (imgs) drawFit(ctx, imgs[0], p.x, cy + size / 2, size, size);
       else this.drawEmoji(ctx, def.emoji, p.x, cy, size * 0.95);
     } else {
       const w = L.laneW * 0.86 * s;
       const h = L.P * 1.2 * s;
       this.drawShadow(ctx, p.x, p.y, w * 0.55);
-      if (img) {
-        ctx.drawImage(img, p.x - w / 2, p.y - h, w, h);
+      if (imgs && def.stack === false) {
+        // one picture per obstacle, alternating through the list
+        drawFit(ctx, imgs[o.id % imgs.length], p.x, p.y, w, h);
+      } else if (imgs) {
+        // stack the images bottom-up so together they form a tall wall
+        let bottom = p.y;
+        for (let i = imgs.length - 1; i >= 0; i--) {
+          bottom -= drawFit(ctx, imgs[i], p.x, bottom, w, h / imgs.length);
+        }
       } else {
         const cols = 2, rows = 3;
         const cw = w / cols, rh = h / rows;

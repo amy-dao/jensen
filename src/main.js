@@ -28,6 +28,15 @@ const game = new Game($('game'), CONFIG, {
 });
 
 const keyboard = new KeyboardController(CONFIG);
+
+// Hide hints for moves that are switched off in CONFIG.moves.
+for (const el of document.querySelectorAll('[data-move]')) {
+  el.classList.toggle('hidden', !CONFIG.moves[el.dataset.move]);
+}
+const anyMove = CONFIG.moves.jump || CONFIG.moves.duck;
+for (const el of document.querySelectorAll('[data-moves]')) {
+  el.classList.toggle('hidden', (el.dataset.moves === 'all') !== anyMove);
+}
 let camera = null; // created lazily so keyboard mode never touches MediaPipe
 let controller = null;
 let mode = null; // 'keyboard' | 'camera'

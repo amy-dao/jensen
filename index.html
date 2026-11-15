@@ -169,7 +169,8 @@
     .paper-legend { display: flex; gap: clamp(24px, 10vw, 130px); justify-content: center; flex-wrap: wrap; }
     .paper-legend div { display: flex; align-items: center; gap: 20px; font-size: 26px; }
     .paper-legend img { width: 84px; height: 84px; object-fit: contain; }
-    .paper-small { margin: 0; font-size: 16px; color: #444; }
+    .paper-small { margin: 0; font-size: 16px; color: #444; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+    .paper-small img { width: 26px; height: 26px; object-fit: contain; }
     .shake { animation: shake 0.35s; }
     @keyframes shake { 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-4px); } }
 
@@ -194,9 +195,9 @@
   </div>
 
   <div id="keyhint" class="hidden">
-    <kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> change lane<br>
-    <kbd>↑</kbd> / <kbd>W</kbd> / <kbd>Space</kbd> jump<br>
-    <kbd>↓</kbd> / <kbd>S</kbd> duck
+    <div><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> change lane</div>
+    <div data-move="jump"><kbd>↑</kbd> / <kbd>W</kbd> / <kbd>Space</kbd> jump</div>
+    <div data-move="duck"><kbd>↓</kbd> / <kbd>S</kbd> duck</div>
   </div>
 
   <!-- Webcam preview -->
@@ -225,7 +226,14 @@
         <div><img src="assets/menu-thumbsup.png" alt=""><span>collect gpus!</span></div>
         <div><img src="assets/menu-thumbsdown.png" alt=""><span>dodge the obstacles!</span></div>
       </div>
-      <p class="paper-small">🚧 jump &nbsp;·&nbsp; 🛸 duck &nbsp;·&nbsp; 🧱 switch lanes</p>
+      <p class="paper-small" data-moves="lanes">
+        <img src="assets/distract-a.webp" alt=""><img src="assets/distract-b.webp" alt=""> block a lane: switch lanes to get past
+      </p>
+      <p class="paper-small" data-moves="all">
+        <img src="assets/distract-a.webp" alt=""> jump over &nbsp;·&nbsp;
+        <img src="assets/distract-b.webp" alt=""> duck under (it floats) &nbsp;·&nbsp;
+        <img src="assets/distract-a.webp" alt=""><img src="assets/distract-b.webp" alt=""> stacked: switch lanes
+      </p>
     </div>
   </div>
 
