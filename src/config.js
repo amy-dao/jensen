@@ -28,6 +28,26 @@ export const CONFIG = {
   },
   gpu: { image: null },      // null -> green "GPU" card
 
+  // --- Background: NVIDIA HQ interior ---
+  // Each photo is un-warped into a flat strip at load time, mapped onto a 3D plane
+  // (ceiling / left wall / right wall) and mirror-tiled along the run so it loops seamlessly.
+  // Photo geometry, in source pixels: vp = vanishing point, near/far = distance from the vp
+  // (along x for walls, along y for the ceiling) of the slice of photo that is used,
+  // a/b = slopes of the two edge rays leaving the vp (wall: top/bottom, ceiling: left/right).
+  // If the images fail to load, the old night-sky backdrop is drawn instead.
+  background: {
+    wallLanes: [-1.1, 3.1],  // lateral position of the left / right wall, in lanes (road is -0.5..2.5)
+    wallHeight: 2.3,         // ceiling height in lane widths
+    period: { ceiling: 0.42, walls: 0.22 }, // length of one tile along the run, in z units (1 = horizon)
+    fadeStart: 0.8,          // z where the planes start fading into the fog
+    fadeEnd: 2.6,            // z where they are fully faded (nothing drawn past this)
+    fog: [150, 160, 155],    // colour at the vanishing point (RGB)
+    dim: 0.18,               // darken the backdrop so the road and obstacles stay readable
+    ceiling: { src: 'assets/hq-ceiling.jpg', vp: [172, 335], near: 335, far: 120, a: -0.513, b: 0.487 },
+    left:    { src: 'assets/hq-left.jpg',    vp: [295, 320], near: 295, far: 100, a: -1.085, b: 0.407 },
+    right:   { src: 'assets/hq-right.jpg',   vp: [25, 305],  near: 260, far: 85,  a: -0.96,  b: 0.66 },
+  },
+
   // --- Camera / pose tracking ---
   pose: {
     calibrationSeconds: 3,   // how long to stand still during calibration

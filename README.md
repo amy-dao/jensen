@@ -58,6 +58,7 @@ Both controllers expose the same interface, `{ lane, start(), stop(), update(ela
 ## Customising
 
 - **Jensen's head**: put a back-of-head picture at `assets/jensen-head.png`, ideally a transparent PNG. Until it exists the game draws a placeholder and the browser console logs a harmless 404.
+- **Background (NVIDIA HQ interior)**: `assets/hq-ceiling.jpg`, `hq-left.jpg` and `hq-right.jpg` are un-warped at load time and mapped onto a 3D ceiling and walls that scroll with the road, mirror-tiled so the hall loops without seams. To swap a photo, update its `vp` / `near` / `far` / `a` / `b` in `background` in `src/config.js`. If the photos fail to load, the old night-sky backdrop is drawn.
 - **Obstacle / GPU pictures**: set `image` in `src/config.js`, for example `obstacles.low.image = 'assets/cone.png'`.
 - **Difficulty**: `levelSeconds`, `travelSeconds`, `rowEvery`, `doubleObstacleChance` and `seed` in `src/config.js`.
 - **Camera sensitivity**: `pose.jumpRise` (lower makes jumping easier) and `pose.duckDrop` (lower makes ducking easier).
