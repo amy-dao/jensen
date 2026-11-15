@@ -150,7 +150,7 @@ function onEnd(result) {
   controller.stop();
   const endEl = els.screens.end;
   endEl.classList.toggle('failed', !result.won);
-  els.endTitle.textContent = result.won ? 'Level complete! 🏁' : 'Level failed 💥';
+  els.endTitle.textContent = result.won ? 'you won!!' : 'you failed !!!';
   els.endTime.textContent = result.time.toFixed(1) + 's';
   els.endGpus.textContent = result.gpus;
   els.btnRecal.classList.toggle('hidden', mode !== 'camera');

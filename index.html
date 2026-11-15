@@ -9,6 +9,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2376b900'/><text x='50' y='68' font-size='52' font-family='system-ui' font-weight='900' text-anchor='middle' fill='%23050a05'>JR</text></svg>">
   <style>
     :root {
+      --comic: "Comic Sans MS", "Comic Sans", "Comic Neue", "Chalkboard SE", "Chalkboard", cursive;
       --green: #76b900;
       --green-hi: #9be21a;
       --bg: #040a06;
@@ -41,6 +42,8 @@
       border-radius: 999px; padding: 6px 14px; font-size: 18px; white-space: nowrap;
       font-variant-numeric: tabular-nums;
     }
+    .gpu-chip { font-family: var(--comic); font-weight: 700; }
+    .gpu-chip .gpu-icon { font-family: var(--comic); font-weight: 700; }
     .gpu-icon {
       background: var(--green); color: #071107; font-size: 11px; font-weight: 900;
       border-radius: 4px; padding: 2px 5px;
@@ -126,23 +129,45 @@
 
     #countdown { pointer-events: none; }
     #countdown-num {
-      font-size: clamp(120px, 30vw, 240px); font-weight: 900; color: #fff;
+      font-family: var(--comic); font-size: clamp(120px, 30vw, 240px); font-weight: 700; color: #fff;
       text-shadow: 0 0 40px rgba(118,185,0,0.9), 0 6px 0 rgba(0,0,0,0.5);
       animation: pop 1s ease-out infinite;
     }
     @keyframes pop { 0% { transform: scale(1.5); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.9); opacity: 0.85; } }
 
-    .stats { display: flex; justify-content: center; gap: 12px; margin: 16px 0 4px; }
-    .stat { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 10px 18px; min-width: 120px; }
-    .stat .v { font-size: 30px; font-weight: 900; color: var(--green); font-variant-numeric: tabular-nums; }
-    .stat .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-    #end.failed h2 { color: var(--red); }
+    /* ---------- win / lose pop-up (paper card over the frozen game) ---------- */
+    .popup-backdrop { background: rgba(0, 0, 0, 0.45); }
+    .popup {
+      width: min(640px, 100%); max-height: calc(100% - 16px);
+      padding: 26px 32px 18px; text-align: center;
+      box-shadow: 0 16px 50px rgba(0,0,0,0.55); border-radius: 4px;
+      animation: popup-in 0.18s ease-out;
+    }
+    @keyframes popup-in { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .popup-title { margin: 0 0 18px; font-size: clamp(30px, 6vw, 40px); font-weight: 400; }
+    .popup-stats { display: flex; justify-content: center; gap: clamp(28px, 10vw, 80px); margin-bottom: 22px; }
+    .popup-stats > div { display: flex; flex-direction: column; align-items: center; }
+    .popup-v { font-size: 32px; font-variant-numeric: tabular-nums; }
+    .popup-k { font-size: 16px; color: #555; }
+    .popup-actions { display: flex; justify-content: space-between; gap: 16px; padding: 0 clamp(0px, 4vw, 40px); }
+    .link-btn {
+      font: inherit; font-size: 26px; color: #111;
+      background: none; border: 0; border-radius: 0; padding: 4px 6px; cursor: pointer;
+      text-decoration: none; text-underline-offset: 5px; text-decoration-thickness: 2px;
+    }
+    .link-btn:hover, .link-btn:focus-visible { background: none; text-decoration: underline; outline: none; }
+    .link-btn:active { transform: none; }
+    .link-small { font-size: 17px; color: #444; margin-top: 6px; }
+    .popup-art { display: none; margin-top: 18px; justify-content: center; align-items: stretch; height: clamp(80px, 22vw, 130px); }
+    .popup-art img { height: 100%; width: auto; display: block; }
+    #end.failed .popup-art { display: flex; }
+    .popup-hint { margin: 14px 0 0; font-size: 14px; color: #666; }
 
     /* ---------- start page (paper) ---------- */
     .paper {
       background: #f4f4f2 url("assets/menu-paper.webp") center / cover no-repeat;
       color: #111; overflow-y: auto;
-      font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", "Chalkboard SE", "Chalkboard", cursive;
+      font-family: var(--comic);
     }
     .paper-inner { width: min(960px, 100%); display: flex; flex-direction: column; align-items: center; gap: clamp(20px, 5vh, 56px); }
     .paper-head { display: flex; align-items: center; justify-content: center; gap: clamp(16px, 5vw, 64px); flex-wrap: wrap; }
@@ -189,7 +214,7 @@
 
   <!-- HUD -->
   <div id="hud" class="hidden">
-    <div class="chip"><span class="gpu-icon">GPU</span><span id="hud-gpu">0</span></div>
+    <div class="chip gpu-chip"><span class="gpu-icon">GPU</span><span id="hud-gpu">0</span></div>
     <div id="progress" aria-label="Progress to the finish"><div id="progress-fill"></div></div>
     <div class="chip">⏱ <span id="hud-time">20s</span></div>
   </div>
@@ -256,19 +281,23 @@
   </div>
 
   <!-- End -->
-  <div id="end" class="screen dim hidden">
-    <div class="panel">
-      <h2 id="end-title">Level complete! 🏁</h2>
-      <div class="stats">
-        <div class="stat"><div class="v" id="end-time">0.0s</div><div class="k">Time survived</div></div>
-        <div class="stat"><div class="v" id="end-gpus">0</div><div class="k">GPUs collected</div></div>
+  <div id="end" class="screen popup-backdrop hidden">
+    <div class="popup paper" role="dialog" aria-modal="true" aria-labelledby="end-title">
+      <h2 id="end-title" class="popup-title">you won!!</h2>
+      <div class="popup-stats">
+        <div><span class="popup-v" id="end-time">0.0s</span><span class="popup-k">time survived</span></div>
+        <div><span class="popup-v" id="end-gpus">0</span><span class="popup-k">gpus collected</span></div>
       </div>
-      <div class="buttons">
-        <button id="btn-retry" class="primary">↻ Retry</button>
-        <button id="btn-recal">🎯 Recalibrate</button>
-        <button id="btn-menu">Menu</button>
+      <div class="popup-actions">
+        <button id="btn-retry" class="link-btn">restart</button>
+        <button id="btn-menu" class="link-btn">back to menu</button>
       </div>
-      <p class="small">Press <kbd>Enter</kbd> or <kbd>Space</kbd> to retry</p>
+      <button id="btn-recal" class="link-btn link-small">recalibrate camera</button>
+      <div class="popup-art" aria-hidden="true">
+        <img src="assets/fail-emoji.webp" alt="">
+        <img src="assets/fail-jensen.webp" alt="">
+      </div>
+      <p class="popup-hint">enter or space to restart · esc for menu</p>
     </div>
   </div>
 

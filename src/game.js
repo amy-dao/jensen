@@ -228,7 +228,6 @@ export class Game {
     this.duckAmt = 0;
     this.flash = 0;
     this.scroll = 0;
-    this.popups = [];
     this.result = null;
   }
 
@@ -327,7 +326,6 @@ export class Game {
       if (o.kind === 'gpu') {
         o.collected = true;
         this.gpus++;
-        this.popups.push({ t: 0, lane: o.lane });
         continue;
       }
 
@@ -342,8 +340,6 @@ export class Game {
       }
     }
 
-    for (const p of this.popups) p.t += dt;
-    this.popups = this.popups.filter((p) => p.t < 0.7);
 
     if (this.time >= cfg.levelSeconds) {
       this.time = cfg.levelSeconds;
@@ -409,7 +405,6 @@ export class Game {
     this.drawPlayer(ctx, L);
     for (const o of visible) if (o.z <= 0) this.drawObject(ctx, L, o);
 
-    this.drawPopups(ctx, L);
 
     if (this.flash > 0) {
       ctx.fillStyle = `rgba(255,30,30,${0.5 * this.flash})`;
@@ -787,18 +782,6 @@ export class Game {
     ctx.restore();
   }
 
-  drawPopups(ctx, L) {
-    for (const pop of this.popups) {
-      const p = this.project(L, this.laneX, 0);
-      ctx.globalAlpha = 1 - pop.t / 0.7;
-      ctx.fillStyle = GREEN;
-      ctx.font = `900 ${L.P * 0.16}px system-ui, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('+1 GPU', p.x, p.y - L.P * (1.15 + pop.t * 0.6));
-      ctx.globalAlpha = 1;
-    }
-  }
 
   drawPlayer(ctx, L) {
     const P = L.P;
