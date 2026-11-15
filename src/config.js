@@ -3,14 +3,14 @@
 
 export const CONFIG = {
   // --- Level ---
-  levelSeconds: 90,          // length of the map; survive this long to win
-  travelSeconds: 1.8,        // time for an object to travel from the horizon to the player
-  rowEvery: [1.4, 0.8],      // seconds between obstacle rows [at start, at end] (ramps linearly)
+  levelSeconds: 20,          // length of the map; survive this long to win
+  travelSeconds: 1.2,        // time for an object to travel from the horizon to the player
+  rowEvery: [1.0, 0.6],      // seconds between obstacle rows [at start, at end] (ramps linearly)
   seed: 20251115,            // RNG seed -> the map is identical every run
-  firstRowAt: 0.6,           // seconds into the level before the first row spawns
+  firstRowAt: 0.4,           // seconds into the level before the first row spawns
   doubleObstacleChance: [0.15, 0.6], // chance a row has 2 obstacles [start, end]
   gpuRowChance: 0.55,        // chance a row gets a trail of 3 GPUs in a free lane
-  gpuTrailSpacing: 0.18,     // seconds between GPUs in a trail
+  gpuTrailSpacing: 0.12,     // seconds between GPUs in a trail
 
   // Which moves exist. With both off, every obstacle blocks its lane and the only way
   // to avoid it is to switch lanes (jump/duck controls and hints are hidden).
@@ -27,17 +27,17 @@ export const CONFIG = {
   // Running animation: frames are played in order and looped. They must share one canvas
   // size with the feet on the same line. If any frame fails to load, the stick figure is drawn.
   runFrames: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => `assets/jensen-run-${i}.webp`),
-  runFps: 12,                // animation speed of runFrames
+  runFps: 18,                // animation speed of runFrames
   runFrameFeet: 0.912,       // where the feet are in the frame (0 = top, 1 = bottom)
   runFrameBody: 0.81,        // how much of the frame height the body (head to feet) takes up
   runFrameScale: 1.05,       // body height relative to the stick-figure player
   headImage: null,           // back of the head for the stick-figure fallback, e.g. 'assets/jensen-head.png'
   // Obstacle pictures: `image` is one path, or a list stacked top-to-bottom. null -> emoji.
   obstacles: {
-    low:  { emoji: '🚧', image: 'assets/distract-a.webp' }, // jump over it
-    high: { emoji: '🛸', image: 'assets/distract-b.webp' }, // duck under it
+    // low:  { emoji: '🚧', image: 'assets/distract-a.webp' }, // jump over it
+    // high: { emoji: '🛸', image: 'assets/distract-b.webp' }, // duck under it
     // switch lanes. stack: true draws all images on top of each other; false picks one per obstacle
-    wall: { emoji: '🧱', image: ['assets/distract-a.webp', 'assets/distract-b.webp'], stack: false },
+    wall: { emoji: '🧱', image: ['assets/distraction-1.webp', 'assets/distraction-2.webp'], stack: false },
   },
   gpu: { image: 'assets/gpu.webp', size: 0.46 }, // image: null -> green "GPU" card; size in lane widths
 
