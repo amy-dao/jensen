@@ -37,7 +37,7 @@ export const CONFIG = {
     // low:  { emoji: '🚧', image: 'assets/distract-a.webp' }, // jump over it
     // high: { emoji: '🛸', image: 'assets/distract-b.webp' }, // duck under it
     // switch lanes. stack: true draws all images on top of each other; false picks one per obstacle
-    wall: { emoji: '🧱', image: ['assets/distraction-1.webp', 'assets/distraction-2.webp'], stack: false },
+    wall: { emoji: '🧱', image: ['assets/distraction-1.png', 'assets/distraction-2.png'], stack: false },
   },
   gpu: { image: 'assets/gpu.webp', size: 0.46 }, // image: null -> green "GPU" card; size in lane widths
 
