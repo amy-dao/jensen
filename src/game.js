@@ -172,9 +172,9 @@ export class Game {
     this.images = {
       head: optionalImage(config.headImage),
       // obstacle `image` may be one path or a list (a list is stacked top-to-bottom)
-      low: [].concat(config.obstacles.low.image || []).map(optionalImage),
-      high: [].concat(config.obstacles.high.image || []).map(optionalImage),
-      wall: [].concat(config.obstacles.wall.image || []).map(optionalImage),
+      low: [].concat(config.obstacles.low?.image || []).map(optionalImage),
+      high: [].concat(config.obstacles.high?.image || []).map(optionalImage),
+      wall: [].concat(config.obstacles.wall?.image || []).map(optionalImage),
       gpu: optionalImage(config.gpu.image),
       run: (config.runFrames || []).map(optionalImage),
     };

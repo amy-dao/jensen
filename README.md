@@ -25,7 +25,7 @@ Then open http://localhost:3000.
 
 Right now jumping and ducking are switched off (`moves: { jump: false, duck: false }` in `src/config.js`), so every obstacle blocks its lane and you dodge by switching lanes. Set either to `true` to bring that move back: obstacles that need it return to the map, along with its controls and hints.
 
-Run through the green **GPU** cards to collect them. Survive the full 90 s to reach the finish line. On the end screen, Enter or Space retries and Esc returns to the menu.
+Run through the green **GPU** cards to collect them. Survive the full 20 s to reach the finish line. On the end screen, Enter or Space retries and Esc returns to the menu.
 
 ## Deploy to Vercel
 
