@@ -49,7 +49,8 @@ src/game.js       Game class: update loop, seeded map, collision, rendering
 src/keyboard.js   KeyboardController
 src/camera.js     CameraController (webcam + pose + calibration + preview overlay)
 src/main.js       menu wiring, mode switching, countdown, end screen (onEnd)
-assets/           images (e.g. jensen-head.png)
+assets/           images the game loads (WebP run frames, GPU, menu art, HQ photos)
+assets-src/       full-size originals of the images (not deployed)
 vendor/mediapipe/ @mediapipe/tasks-vision 0.10.14 (vision_bundle.mjs + wasm/)
 ```
 
@@ -59,6 +60,7 @@ Both controllers expose the same interface, `{ lane, start(), stop(), update(ela
 
 - **Jensen's head**: put a back-of-head picture at `assets/jensen-head.png`, ideally a transparent PNG. Until it exists the game draws a placeholder and the browser console logs a harmless 404.
 - **Background (NVIDIA HQ interior)**: `assets/hq-ceiling.jpg`, `hq-left.jpg` and `hq-right.jpg` are un-warped at load time and mapped onto a 3D ceiling and walls that scroll with the road, mirror-tiled so the hall loops without seams. To swap a photo, update its `vp` / `near` / `far` / `a` / `b` in `background` in `src/config.js`. If the photos fail to load, the old night-sky backdrop is drawn.
+- **Image masters**: full-size originals live in `assets-src/`; the game loads the smaller `.webp` copies in `assets/`. `assets-src/` is listed in `.vercelignore`, so it isn't deployed.
 - **Obstacle / GPU pictures**: set `image` in `src/config.js`, for example `obstacles.low.image = 'assets/cone.png'`.
 - **Difficulty**: `levelSeconds`, `travelSeconds`, `rowEvery`, `doubleObstacleChance` and `seed` in `src/config.js`.
 - **Camera sensitivity**: `pose.jumpRise` (lower makes jumping easier) and `pose.duckDrop` (lower makes ducking easier).

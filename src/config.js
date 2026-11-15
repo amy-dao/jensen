@@ -20,13 +20,20 @@ export const CONFIG = {
   runCycle: 14,              // leg animation speed in rad/s
 
   // --- Art ---
-  headImage: 'assets/jensen-head.png', // back of the head; placeholder is drawn if missing
+  // Running animation: frames are played in order and looped. They must share one canvas
+  // size with the feet on the same line. If any frame fails to load, the stick figure is drawn.
+  runFrames: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => `assets/jensen-run-${i}.webp`),
+  runFps: 12,                // animation speed of runFrames
+  runFrameFeet: 0.912,       // where the feet are in the frame (0 = top, 1 = bottom)
+  runFrameBody: 0.81,        // how much of the frame height the body (head to feet) takes up
+  runFrameScale: 1.05,       // body height relative to the stick-figure player
+  headImage: null,           // back of the head for the stick-figure fallback, e.g. 'assets/jensen-head.png'
   obstacles: {
     low:  { emoji: '🚧', image: null }, // jump over it
     high: { emoji: '🛸', image: null }, // duck under it
     wall: { emoji: '🧱', image: null }, // switch lanes
   },
-  gpu: { image: null },      // null -> green "GPU" card
+  gpu: { image: 'assets/gpu.webp', size: 0.46 }, // image: null -> green "GPU" card; size in lane widths
 
   // --- Background: NVIDIA HQ interior ---
   // Each photo is un-warped into a flat strip at load time, mapped onto a 3D plane

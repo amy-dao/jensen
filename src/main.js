@@ -175,8 +175,25 @@ function toMenu() {
 
 // ---------- wiring ----------
 
-$('btn-keyboard').addEventListener('click', startKeyboard);
-$('btn-camera').addEventListener('click', startCamera);
+function play() {
+  const picked = document.querySelector('input[name="mode"]:checked');
+  const picker = $('mode-picker');
+  if (!picked) {
+    $('mode-hint').textContent = 'pick a mode first!';
+    picker.classList.remove('shake');
+    void picker.offsetWidth; // restart the animation
+    picker.classList.add('shake');
+    return;
+  }
+  $('mode-hint').textContent = '';
+  if (picked.value === 'camera') startCamera();
+  else startKeyboard();
+}
+
+$('btn-play').addEventListener('click', play);
+for (const r of document.querySelectorAll('input[name="mode"]')) {
+  r.addEventListener('change', () => { $('mode-hint').textContent = ''; });
+}
 $('btn-calib-back').addEventListener('click', toMenu);
 $('btn-retry').addEventListener('click', retry);
 $('btn-recal').addEventListener('click', recalibrate);
@@ -186,6 +203,9 @@ window.addEventListener('keydown', (e) => {
   if (!els.screens.end.classList.contains('hidden') && (e.code === 'Enter' || e.code === 'Space' || e.code === 'NumpadEnter')) {
     e.preventDefault();
     if (!e.repeat) retry();
+  } else if (!els.screens.menu.classList.contains('hidden') && (e.code === 'Enter' || e.code === 'NumpadEnter')) {
+    e.preventDefault();
+    if (!e.repeat) play();
   } else if (e.code === 'Escape' && els.screens.menu.classList.contains('hidden')) {
     e.preventDefault();
     toMenu();

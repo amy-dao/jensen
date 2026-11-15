@@ -164,6 +164,7 @@ export class Game {
       high: optionalImage(config.obstacles.high.image),
       wall: optionalImage(config.obstacles.wall.image),
       gpu: optionalImage(config.gpu.image),
+      run: (config.runFrames || []).map(optionalImage),
     };
     this.bg = loadBackground(config.background);
 
@@ -674,7 +675,10 @@ export class Game {
       this.drawShadow(ctx, p.x, p.y, w * 0.45, 0.4);
       const img = this.images.gpu.img;
       if (img) {
-        ctx.drawImage(img, p.x - w / 2, cy - h / 2, w, h);
+        // keep the picture's own aspect ratio
+        const iw = L.laneW * (this.cfg.gpu.size || 0.46) * s;
+        const ih = iw * img.height / img.width;
+        ctx.drawImage(img, p.x - iw / 2, cy - ih / 2, iw, ih);
       } else {
         ctx.shadowColor = GREEN;
         ctx.shadowBlur = 16 * s;
@@ -770,6 +774,25 @@ export class Game {
     this.drawShadow(ctx, p.x, L.baseY, P * 0.2 * (1 - 0.45 * jumpH), 0.6 - 0.3 * jumpH);
 
     const d = this.duckAmt;
+
+    // Sprite animation (config.runFrames) once every frame has loaded.
+    const frames = this.images.run;
+    if (frames.length && frames.every((f) => f.img)) {
+      const cfg = this.cfg;
+      let i = 0;                                                    // standing pose
+      if (this.jumpT >= 0) i = Math.min(3, frames.length - 1);      // mid-stride while airborne
+      else if (running) i = Math.floor(this.anim * cfg.runFps) % frames.length;
+      const img = frames[i].img;
+      const k = (P * cfg.runFrameScale) / (img.height * cfg.runFrameBody); // px per source px
+      const w = img.width * k, h = img.height * k;
+      ctx.save();
+      ctx.translate(p.x, feetY);
+      ctx.scale(1 + 0.12 * d, 1 - 0.4 * d);                        // duck squash
+      ctx.drawImage(img, -w / 2, -h * cfg.runFrameFeet, w, h);
+      ctx.restore();
+      return;
+    }
+
     ctx.save();
     ctx.translate(p.x, feetY);
     ctx.scale(P * (1 + 0.12 * d), P * (1 - 0.4 * d));

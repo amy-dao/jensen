@@ -138,7 +138,44 @@
     .stat .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
     #end.failed h2 { color: var(--red); }
 
+    /* ---------- start page (paper) ---------- */
+    .paper {
+      background: #f4f4f2 url("assets/menu-paper.webp") center / cover no-repeat;
+      color: #111; overflow-y: auto;
+      font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", "Chalkboard SE", "Chalkboard", cursive;
+    }
+    .paper-inner { width: min(960px, 100%); display: flex; flex-direction: column; align-items: center; gap: clamp(20px, 5vh, 56px); }
+    .paper-head { display: flex; align-items: center; justify-content: center; gap: clamp(16px, 5vw, 64px); flex-wrap: wrap; }
+    .paper-jensen { width: clamp(110px, 18vw, 190px); height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.25)); }
+    .paper-titles { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .paper-title { margin: 0 0 clamp(14px, 4vh, 36px); font-size: clamp(34px, 6.5vw, 58px); font-weight: 400; line-height: 1.1; }
+    .paper-mode { border: 0; margin: 0; padding: 0; display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+    .paper-mode legend { font-size: 26px; padding: 0; margin: 0 auto 8px; }
+    .paper-mode label { font-size: 26px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+    .paper-mode input {
+      appearance: none; -webkit-appearance: none; margin: 0; cursor: pointer;
+      width: 22px; height: 22px; border: 1.5px solid #111; background: #fff;
+      display: grid; place-content: center;
+    }
+    .paper-mode input:checked::after { content: "✓"; font: 700 18px/1 system-ui, sans-serif; color: #111; }
+    .paper-mode input:focus-visible { outline: 2px solid #76b900; outline-offset: 2px; }
+    .paper-hint { min-height: 1.4em; margin: 6px 0 4px; font-size: 17px; color: #b3261e; }
+    .paper-play {
+      font: inherit; font-size: 28px; color: #111;
+      background: #7cb82f; border: 1.5px solid #111; border-radius: 0;
+      padding: 8px 32px; min-width: 120px;
+    }
+    .paper-play:hover { background: #8fcb3f; }
+    .paper-legend { display: flex; gap: clamp(24px, 10vw, 130px); justify-content: center; flex-wrap: wrap; }
+    .paper-legend div { display: flex; align-items: center; gap: 20px; font-size: 26px; }
+    .paper-legend img { width: 84px; height: 84px; object-fit: contain; }
+    .paper-small { margin: 0; font-size: 16px; color: #444; }
+    .shake { animation: shake 0.35s; }
+    @keyframes shake { 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-4px); } }
+
     @media (max-width: 520px) {
+      .paper-mode label, .paper-legend div, .paper-mode legend { font-size: 20px; }
+      .paper-legend img { width: 56px; height: 56px; }
       .panel { padding: 22px 16px 18px; }
       #hud { gap: 8px; }
       .chip { font-size: 15px; padding: 5px 10px; }
@@ -169,21 +206,26 @@
   </div>
 
   <!-- Menu -->
-  <div id="menu" class="screen dim">
-    <div class="panel">
-      <h1 class="title">Jensen <span>Run</span></h1>
-      <p class="tagline">Dodge the obstacles, grab the GPUs, reach the finish.</p>
-      <div class="buttons">
-        <button id="btn-keyboard" class="primary">⌨️ Keyboard mode</button>
-        <button id="btn-camera">📷 Camera mode</button>
+  <div id="menu" class="screen paper">
+    <div class="paper-inner">
+      <div class="paper-head">
+        <img class="paper-jensen" src="assets/menu-jensen.png" alt="Jensen Huang">
+        <div class="paper-titles">
+          <h1 class="paper-title">jensen huang run</h1>
+          <fieldset class="paper-mode" id="mode-picker">
+            <legend>mode</legend>
+            <label><input type="radio" name="mode" value="keyboard"> keyboard</label>
+            <label><input type="radio" name="mode" value="camera"> camera</label>
+          </fieldset>
+          <p class="paper-hint" id="mode-hint" aria-live="polite"></p>
+          <button id="btn-play" class="paper-play">play</button>
+        </div>
       </div>
-      <div class="legend">
-        <div><span class="em">🚧</span><b>Jump</b> over it</div>
-        <div><span class="em">🛸</span><b>Duck</b> under it</div>
-        <div><span class="em">🧱</span><b>Switch</b> lanes</div>
-        <div class="gpu-row"><span class="gpu-icon">GPU</span>&nbsp; Run through GPUs to collect them</div>
+      <div class="paper-legend">
+        <div><img src="assets/menu-thumbsup.png" alt=""><span>collect gpus!</span></div>
+        <div><img src="assets/menu-thumbsdown.png" alt=""><span>dodge the obstacles!</span></div>
       </div>
-      <p class="small" style="margin-top:14px">Camera mode: move left/right to change lanes, jump, and crouch — with your whole body.</p>
+      <p class="paper-small">🚧 jump &nbsp;·&nbsp; 🛸 duck &nbsp;·&nbsp; 🧱 switch lanes</p>
     </div>
   </div>
 
